@@ -1,20 +1,16 @@
 --[[
 Copyright (c) 2010-2013 Matthias Richter
-
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
 in the Software without restriction, including without limitation the rights
 to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 copies of the Software, and to permit persons to whom the Software is
 furnished to do so, subject to the following conditions:
-
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
-
 Except as contained in this notice, the name(s) of the above copyright holders
 shall not be used in advertising or otherwise to promote the sale, use or
 other dealings in this Software without prior written authorization.
-
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -33,12 +29,27 @@ vector.__index = vector
 local function new(x,y)
 	return setmetatable({x = x or 0, y = y or 0}, vector)
 end
-
 local zero  = new( 0,  0)
 local up    = new( 0, -1)
 local down  = new( 0,  1)
 local left  = new(-1,  0)
 local right = new( 1,  0)
+
+local function fromPolar(angle, radius)
+	radius = radius or 1
+	return new(cos(angle) * radius, sin(angle) * radius)
+end
+
+local function randomDirection(len_min, len_max)
+	len_min = len_min or 1
+	len_max = len_max or len_min
+
+	assert(len_max > 0, "len_max must be greater than zero")
+	assert(len_max >= len_min, "len_max must be greater than or equal to len_min")
+	
+	return fromPolar(math.random() * 2*math.pi,
+	                 math.random() * (len_max-len_min) + len_min)
+end
 
 local function isvector(v)
 	return type(v) == 'table' and type(v.x) == 'number' and type(v.y) == 'number'
@@ -143,6 +154,10 @@ function vector.permul(a,b)
 	return new(a.x*b.x, a.y*b.y)
 end
 
+function vector:toPolar()
+	return new(atan2(self.x, self.y), self:len())
+end
+
 function vector:len2()
 	return self.x * self.x + self.y * self.y
 end
@@ -229,7 +244,6 @@ end
 function vector:trimmed(maxLen)
 	return self:clone():trimInplace(maxLen)
 end
-
 
 -- the module
 return setmetatable({
